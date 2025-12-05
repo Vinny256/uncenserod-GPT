@@ -1,0 +1,15 @@
+1. CRITICAL: Never upload the API Key
+
+.env
+
+2. Database: Do not upload local database files
+
+*.db
+*.sqlite
+instance/
+
+3. Python System Files (Junk)
+
+pycache/
+*.pyc
+.DS_Store

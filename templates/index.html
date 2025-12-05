@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HACX_GPT // UPLINK</title>
+    
+    <!-- 1. IMPORT LIBRARIES FOR MARKDOWN AND CODE HIGHLIGHTING -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        /* --- GLOBAL HACKER STYLES --- */
+        * { box-sizing: border-box; }
+        body {
+            background-color: #050505;
+            color: #0f0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            border-bottom: 1px solid #0f0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000;
+            z-index: 10;
+        }
+        .status { font-size: 12px; color: #008f11; animation: blink 2s infinite; }
+        .user-tag { font-weight: bold; border: 1px solid #0f0; padding: 2px 8px; }
+        .logout-btn {
+            color: red;
+            text-decoration: none;
+            border: 1px solid red;
+            padding: 5px 10px;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .logout-btn:hover { background: red; color: black; }
+
+        /* --- CHAT AREA --- */
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+        }
+        
+        /* Message Bubbles */
+        .msg {
+            max-width: 85%;
+            padding: 10px 15px;
+            position: relative;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        
+        /* Markdown Styles Inside Chat */
+        .msg p { margin: 0 0 10px 0; }
+        .msg p:last-child { margin: 0; }
+        .msg strong { color: #fff; }
+        .msg ul, .msg ol { margin: 5px 0 15px 20px; }
+
+        /* --- CODE BLOCK STYLING (The cool part) --- */
+        pre {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 10px 0;
+            color: #ccc;
+        }
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        /* User vs AI Styles */
+        .user-msg {
+            align-self: flex-end;
+            border-right: 3px solid #0f0;
+            background: rgba(0, 255, 0, 0.05);
+            text-align: right;
+        }
+        .user-msg::before { content: "YOU >>"; display: block; font-size: 10px; color: #555; margin-bottom: 5px; }
+
+        .ai-msg {
+            align-self: flex-start;
+            border-left: 3px solid #0f0;
+            background: rgba(0, 255, 0, 0.1);
+            color: #ccffcc;
+        }
+        .ai-msg::before { content: "[CodeMASTER]"; display: block; font-size: 10px; color: #0f0; margin-bottom: 5px; font-weight: bold; }
+
+        /* --- INPUT AREA --- */
+        footer {
+            padding: 20px;
+            background: #000;
+            border-top: 1px solid #0f0;
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            background: #111;
+            border: 1px solid #333;
+            color: #0f0;
+            padding: 12px;
+            font-family: inherit;
+            outline: none;
+        }
+        input:focus { border-color: #0f0; }
+        button {
+            background: #0f0;
+            color: black;
+            border: none;
+            padding: 0 20px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        button:hover { background: white; }
+        button:disabled { background: #333; color: #555; cursor: not-allowed; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #003300; }
+        ::-webkit-scrollbar-thumb:hover { background: #0f0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <span class="user-tag">USER: {{ username }}</span>
+            <span class="status">● SECURE_CONNECTION_ESTABLISHED</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">TERMINATE_SESSION</a>
+    </header>
+
+    <div id="chat-box">
+        {% for chat in history %}
+            <!-- Render User messages normally -->
+            <div class="msg user-msg">{{ chat.user_msg }}</div>
+            <!-- Render AI messages with Markdown class -->
+            <div class="msg ai-msg markdown-content">{{ chat.ai_msg }}</div>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <input type="text" id="user-input" placeholder="Enter command or query..." autocomplete="off">
+        <button id="send-btn" onclick="sendMessage()">SEND_DATA</button>
+    </footer>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const inputField = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // --- 1. INITIALIZE MARKDOWN ON LOAD ---
+        // This takes the plain text history and converts it to HTML + Colors
+        document.querySelectorAll('.markdown-content').forEach(el => {
+            el.innerHTML = marked.parse(el.innerText);
+        });
+        hljs.highlightAll(); // Apply syntax highlighting
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Allow Enter key to submit
+        inputField.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            // Add User Message (Plain Text)
+            addMessage(text, 'user-msg', false);
+            
+            inputField.value = '';
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.innerText = "PROCESSING...";
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+
+                if (data.response) {
+                    // Add AI Response (Formatted as Markdown)
+                    addMessage(data.response, 'ai-msg', true);
+                } else {
+                    addMessage("SYSTEM ERROR: No response data.", 'ai-msg', false);
+                }
+
+            } catch (error) {
+                addMessage("CONNECTION FAILURE: " + error, 'ai-msg', false);
+            }
+
+            inputField.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.innerText = "SEND_DATA";
+            inputField.focus();
+        }
+
+        function addMessage(text, className, isMarkdown) {
+            const div = document.createElement('div');
+            div.classList.add('msg', className);
+            
+            if (isMarkdown) {
+                // Convert Markdown symbols to HTML
+                div.innerHTML = marked.parse(text);
+            } else {
+                div.innerText = text;
+            }
+
+            chatBox.appendChild(div);
+            
+            // Apply colors if it's an AI message
+            if (isMarkdown) {
+                hljs.highlightAll();
+            }
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>

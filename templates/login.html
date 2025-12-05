@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HACX_GPT // LOGIN</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            border: 2px solid #00ff41;
+            padding: 40px;
+            width: 350px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            position: relative;
+        }
+        /* Scanline effect */
+        .container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        h1 {
+            text-align: center;
+            text-shadow: 0 0 5px #00ff41;
+            margin-bottom: 30px;
+        }
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #00ff41;
+            color: white;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        input::placeholder {
+            color: #008f11;
+        }
+        button {
+            width: 100%;
+            background: #00ff41;
+            color: black;
+            border: none;
+            padding: 15px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: black;
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 15px #00ff41;
+        }
+        .alert {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 1px solid red;
+            padding: 5px;
+        }
+        .links {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 12px;
+        }
+        a { color: #00ff41; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>SYSTEM_ACCESS</h1>
+        
+        <!-- Flash Messages (Errors) -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">[!] {{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="CODENAME" required autocomplete="off">
+            <input type="password" name="password" placeholder="PASSPHRASE" required>
+            <button type="submit">INITIALIZE_SESSION</button>
+        </form>
+
+        <div class="links">
+            <p>NEW USER? <a href="{{ url_for('register') }}">ESTABLISH_IDENTITY</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
